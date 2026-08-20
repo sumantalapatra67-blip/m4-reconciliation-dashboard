@@ -1,12 +1,13 @@
-// Replace with your actual Supabase URL and Anon Key
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+// Supabase Configuration
+const SUPABASE_URL = 'https://slvtnphpqvoohdhxesbt.supabase.co';
+// TODO: Replace 'YOUR_SUPABASE_ANON_KEY' with your actual anon key from Supabase Dashboard -> Settings -> API
 const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function fetchDashboardData() {
     try {
-        // Fetch Recent Reconciliation Logs
+        // Fetch Recent Reconciliation Logs from v_reconciliation_dashboard
         const { data: logs, error: logsError } = await supabase
             .from('v_reconciliation_dashboard')
             .select('*')
@@ -23,18 +24,19 @@ async function fetchDashboardData() {
         } else {
             logs.forEach(row => {
                 const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 border-b border-gray-100';
                 tr.innerHTML = `
                     <td class="p-4 font-mono text-xs text-gray-600">${row.request_id || 'N/A'}</td>
-                    <td class="p-4 font-medium">${row.invoice_number || 'N/A'}</td>
-                    <td class="p-4"><span class="px-2 py-1 text-xs rounded bg-gray-100">${row.document_status || 'UNKNOWN'}</span></td>
+                    <td class="p-4 font-medium text-gray-800">${row.invoice_number || 'N/A'}</td>
+                    <td class="p-4"><span class="px-2 py-1 text-xs rounded bg-gray-100 font-medium">${row.document_status || 'UNKNOWN'}</span></td>
                     <td class="p-4"><span class="px-2 py-1 text-xs rounded font-semibold ${getStatusBadge(row.reconciliation_status)}">${row.reconciliation_status || 'N/A'}</span></td>
-                    <td class="p-4 text-xs text-gray-500">${new Date(row.created_at).toLocaleString()}</td>
+                    <td class="p-4 text-xs text-gray-500">${row.created_at ? new Date(row.created_at).toLocaleString() : 'N/A'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Calculate and Render Metrics
+        // Calculate Metrics
         let total = logs ? logs.length : 0;
         let reconciled = logs ? logs.filter(l => l.reconciliation_status === 'RECONCILED').length : 0;
         let processing = logs ? logs.filter(l => l.reconciliation_status === 'PROCESSING').length : 0;
